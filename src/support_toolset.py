@@ -33,7 +33,7 @@ class SupportToolset:
                     text_to_search = (item.get("question", "") + " " + item.get("answer", "")).lower()
                     
                     if any(word in text_to_search for word in terms):
-                        result_text = f"Policy: {item['question']}\nAnswer: {item['answer']}"
+                        result_text = f"Policy: {item.get('question', 'N/A')}\nAnswer: {item.get('answer', 'See steps below.')}"
                         if "steps" in item:
                             result_text += "\nSteps: " + " -> ".join(item["steps"])
                         results.append(result_text)
