@@ -12,6 +12,21 @@ class SupportToolset:
 
         self.escalation_log = []
 
+        # keywords that should trigger immediate escalation
+        self.escalation_keywords = [
+            "fraud",
+            "unauthorized",
+            "hacked",
+            "illegal",
+            "lawsuit",
+            "legal",
+            "injury",
+            "fire",
+            "shock",
+            "danger",
+            "threat"
+        ]
+
         # load embedding model once
         self.embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
@@ -21,7 +36,6 @@ class SupportToolset:
         with open(kb_path, "r") as f:
             kb = json.load(f)
 
-        # flatten items
         self.kb_items = []
         texts = []
 
@@ -41,7 +55,7 @@ class SupportToolset:
 
                 texts.append(combined_text)
 
-        # convert to embeddings
+        # create embeddings
         embeddings = self.embedding_model.encode(texts)
 
         # create FAISS index
@@ -57,15 +71,31 @@ class SupportToolset:
 
             search_term = str(search_term)
 
+            # check escalation keywords first
+            lowered_query = search_term.lower()
+
+            for word in self.escalation_keywords:
+                if word in lowered_query:
+
+                    return "ESCALATE: Query involves sensitive or high-risk issue."
+
+
             # embed query
             query_embedding = self.embedding_model.encode([search_term])
 
-            # search top 3 matches
+            # search results
             D, I = self.index.search(np.array(query_embedding), k=3)
 
             results = []
 
-            for idx in I[0]:
+            similarity_threshold = 1.2
+
+            for rank, idx in enumerate(I[0]):
+
+                score = D[0][rank]
+
+                if score > similarity_threshold:
+                    continue
 
                 item = self.kb_items[idx]
 
@@ -74,11 +104,24 @@ class SupportToolset:
                     f"Answer: {item.get('answer','N/A')}"
                 )
 
+                # format steps
                 if "steps" in item:
 
-                    result_text += "\nSteps:\n- " + "\n- ".join(item["steps"])
+                    result_text += "\nSteps:\n"
+
+                    for i, step in enumerate(item["steps"], 1):
+                        result_text += f"{i}. {step}\n"
+
+                # format details
+                if "details" in item:
+
+                    result_text += "\nDetails:\n"
+
+                    for detail in item["details"]:
+                        result_text += f"- {detail}\n"
 
                 results.append(result_text)
+
 
             if results:
 
@@ -86,7 +129,8 @@ class SupportToolset:
 
             else:
 
-                return "No relevant information found. Consider escalation."
+                return "NO_MATCH"
+
 
         except Exception as e:
 
