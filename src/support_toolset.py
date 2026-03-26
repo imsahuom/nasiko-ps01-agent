@@ -88,7 +88,7 @@ class SupportToolset:
 
             results = []
 
-            similarity_threshold = 1.2
+            similarity_threshold = 1.8
 
             for rank, idx in enumerate(I[0]):
 
