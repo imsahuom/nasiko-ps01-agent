@@ -1,39 +1,37 @@
 import json
 import os
-import asyncio
 from typing import Any
 
 class SupportToolset:
-    """Customer Support toolset for Aura Electronics KB retrieval and escalation"""
-
     def __init__(self):
         self.escalation_log = []
-        # Dynamically load your JSON file when the agent wakes up
+
+    async def query_knowledge_base(self, search_term: Any) -> str:
+        # Print exactly what the AI sends us to the terminal!
+        print(f"\n--- AI SEARCH INITIATED: {search_term} ---\n") 
         try:
+            # 1. Force the search_term to be a string (fixes dictionary crashes)
+            if isinstance(search_term, dict):
+                search_term = json.dumps(search_term)
+            search_term = str(search_term).lower()
+
+            # 2. Bulletproof file loading
             kb_path = os.path.join(os.path.dirname(__file__), 'knowledge_base.json')
             with open(kb_path, 'r') as f:
-                self.kb = json.load(f)
-        except Exception as e:
-            self.kb = {"categories": []}
-            print(f"CRITICAL ERROR: Could not load knowledge_base.json: {e}")
+                kb = json.load(f)
 
-    async def query_knowledge_base(self, search_term: str) -> str:
-        """Search the Aura Electronics knowledge base.
-        
-        Args:
-            search_term: A short keyword (e.g., 'AuraSync', 'refund').
-        """
-        try:
-            # Split the search into individual words (e.g. "aurasync earbuds" -> ["aurasync", "earbuds"])
-            terms = search_term.lower().split()
+            # 3. Aggressive stop-word filter (added 'policy' so it doesn't match everything)
+            filler_words = ["what", "is", "your", "the", "how", "do", "i", "my", "a", "an", "to", "for", "policy", "please"]
+            terms = [w.strip("?") for w in search_term.split() if w.strip("?") not in filler_words]
+            
+            if not terms:
+                terms = [search_term.strip("?")]
+
             results = []
-
-            for category in self.kb.get("categories", []):
+            for category in kb.get("categories", []):
                 for item in category.get("items", []):
-                    # Combine question and answer into one big block of text to search
                     text_to_search = (item.get("question", "") + " " + item.get("answer", "")).lower()
                     
-                    # If ANY of the search words match, grab the policy!
                     if any(word in text_to_search for word in terms):
                         result_text = f"Policy: {item['question']}\nAnswer: {item['answer']}"
                         if "steps" in item:
@@ -44,23 +42,16 @@ class SupportToolset:
                 return "Found in Knowledge Base:\n\n" + "\n\n---\n\n".join(results[:3])
             else:
                 return f"No info found for '{search_term}'. Escalate or ask user."
+                
         except Exception as e:
+            # Print the EXACT error to your terminal so we aren't guessing
+            print(f"\n--- CRITICAL PYTHON ERROR: {str(e)} ---\n")
             return f"Search failed: {str(e)}"
 
     async def escalate_to_human(self, reason: str, context_summary: str) -> str:
-        """Escalate to a human Tier 2 agent for critical issues, anger, fraud, or unresolvable problems.
-        
-        Args:
-            reason: Why this is being escalated (e.g., 'angry customer', 'fraud', 'legal threat').
-            context_summary: A summary of the issue so far.
-        """
         try:
             ticket_id = f"TKT-{len(self.escalation_log) + 1000}"
-            self.escalation_log.append({
-                "ticket": ticket_id, 
-                "reason": reason, 
-                "context": context_summary
-            })
+            self.escalation_log.append({"ticket": ticket_id, "reason": reason, "context": context_summary})
             return f"ESCALATION SUCCESSFUL. Ticket ID: {ticket_id}. Tell the customer a Tier 2 specialist will contact them shortly."
         except Exception as e:
             return f"Escalation failed: {str(e)}"

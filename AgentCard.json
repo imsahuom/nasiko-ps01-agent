@@ -1,0 +1,74 @@
+{
+  "protocolVersion": "0.2.9",
+  "name": "Aura Customer Support Bot",
+  "description": "An intelligent customer support bot built with A2A (Agent2Agent) SDK that handles customer queries and escalates to humans.",
+  "url": "http://localhost:5000/",
+  "preferredTransport": "JSONRPC",
+  "provider": {
+    "organization": "Nasiko AI Projects",
+    "url": "https://github.com/ashishsharma/nasiko"
+  },
+  "iconUrl": "http://localhost:5000/icon.png",
+  "version": "1.0.0",
+  "documentationUrl": "http://localhost:5000/docs",
+  "capabilities": {
+    "streaming": true,
+    "pushNotifications": false,
+    "stateTransitionHistory": true,
+    "chat_agent": false
+  },
+  "securitySchemes": {},
+  "security": [],
+  "defaultInputModes": [
+    "text/plain"
+  ],
+  "defaultOutputModes": [
+    "text/plain"
+  ],
+  "skills": [
+    {
+      "id": "query-knowledge-base",
+      "name": "Query Knowledge Base",
+      "description": "Search the Aura Electronics knowledge base for solutions",
+      "tags": [
+        "support",
+        "knowledge base",
+        "query"
+      ],
+      "examples": [
+        "How do I pair my AuraSync earbuds?",
+        "What's the refund policy?"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    },
+    {
+      "id": "escalate-to-human",
+      "name": "Escalate to Human",
+      "description": "Escalate to a human Tier 2 agent for critical issues",
+      "tags": [
+        "support",
+        "escalation",
+        "human"
+      ],
+      "examples": [
+        "I want to talk to a manager",
+        "This is a fraud case"
+      ],
+      "inputModes": [
+        "application/json",
+        "text/plain"
+      ],
+      "outputModes": [
+        "application/json"
+      ]
+    }
+  ],
+  "supportsAuthenticatedExtendedCard": false,
+  "signatures": []
+}
