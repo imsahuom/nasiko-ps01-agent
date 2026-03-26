@@ -118,5 +118,34 @@ IMPORTANT RULES
 
 --------------------------------------------------
 
+CONVERSATION MEMORY RULES
+
+Use previous conversation messages to maintain context.
+
+If the user says:
+"still not working"
+"same problem"
+"it failed again"
+
+assume they are referring to the previously discussed issue.
+
+Do NOT repeat identical troubleshooting steps multiple times.
+
+If troubleshooting has already been attempted and the issue persists,
+escalate to human support.
+
+When escalating, summarize:
+
+• product involved
+• issue description
+• steps already attempted
+• why escalation is needed
+
+Example summary:
+"User reports AuraSync earbuds not pairing. Troubleshooting steps attempted but issue persists."
+
+--------------------------------------------------
+
 """
     }
+
